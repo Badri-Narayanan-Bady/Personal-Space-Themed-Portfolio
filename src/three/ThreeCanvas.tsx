@@ -147,7 +147,8 @@ export const ThreeCanvas: React.FC<ThreeCanvasProps> = ({ scrollProgress }) => {
         const localP = p / 0.16;
         rocketAssy.group.position.set(0, 0.2, 0);
         launchpad.position.set(0, 0, 0);
-        earthAssy.group.position.set(0, -15, 0);
+        earthAssy.group.position.set(0, -18, 0);
+        earthAssy.group.scale.set(1, 1, 1);
         exhaustParticles.visible = false;
         combustionLight.intensity = 0;
 
@@ -169,12 +170,13 @@ export const ThreeCanvas: React.FC<ThreeCanvasProps> = ({ scrollProgress }) => {
         rocketAssy.group.position.set(0, 0.2 + altitude, 0);
         exhaustParticles.visible = true;
 
-        // Dynamic combustion flame light intensity & jitter
+        // Dynamic combustion flame light intensity & sinusoidal pulsation
         combustionLight.position.set(0, 0.2 + altitude, 0);
-        combustionLight.intensity = (4 + Math.random() * 3) * (1 - localP * 0.3);
+        const pulse = Math.sin(Date.now() * 0.03) * 0.8;
+        combustionLight.intensity = (5 + pulse) * (1 - localP * 0.3);
 
         exhaustParticles.rotation.y += 0.2;
-        exhaustParticles.scale.set(1 + Math.random() * 0.3, 1 + localP * 2, 1 + Math.random() * 0.3);
+        exhaustParticles.scale.set(1 + Math.abs(pulse) * 0.2, 1 + localP * 2, 1 + Math.abs(pulse) * 0.2);
 
         targetCamPos.set(8 - localP * 3, 4 + altitude * 0.8, 12 + localP * 6);
         targetCamLook.set(0, 0.2 + altitude, 0);
@@ -197,7 +199,7 @@ export const ThreeCanvas: React.FC<ThreeCanvasProps> = ({ scrollProgress }) => {
           booster.rotation.z = localP * 0.5;
         });
 
-        earthAssy.group.position.set(0, -15 - localP * 20, -localP * 10);
+        earthAssy.group.position.set(-10, -20 - localP * 25, -localP * 15);
 
         targetCamPos.set(18 - localP * 8, altitude - 2, 22);
         targetCamLook.set(0, 0.2 + altitude, 0);
@@ -211,8 +213,9 @@ export const ThreeCanvas: React.FC<ThreeCanvasProps> = ({ scrollProgress }) => {
         rocketAssy.group.position.set(Math.sin(localP * Math.PI * 0.5) * 8, 75, Math.cos(localP * Math.PI * 0.5) * 4);
         rocketAssy.group.rotation.set(0.1, localP * Math.PI * 0.4, 1.4);
 
-        earthAssy.group.position.set(-8, 55, -20);
-        earthAssy.group.scale.set(2.2, 2.2, 2.2);
+        // Position Earth at left orbital horizon away from center text card
+        earthAssy.group.position.set(-25, 20, -45);
+        earthAssy.group.scale.set(3.0, 3.0, 3.0);
 
         targetCamPos.set(0, 76, 16);
         targetCamLook.set(rocketAssy.group.position.x, 75, rocketAssy.group.position.z);
@@ -221,22 +224,27 @@ export const ThreeCanvas: React.FC<ThreeCanvasProps> = ({ scrollProgress }) => {
         // SCENE 05 — SATELLITE DEPLOYMENT & SOLAR ARRAY EXTENSION
         const localP = (p - 0.70) / 0.15;
         exhaustParticles.visible = false;
+        combustionLight.intensity = 0;
 
-        const doorAngle = localP * Math.PI * 0.55;
+        // Sequence: 1. Fairing open (0 to 60%)
+        const doorAngle = Math.min(1, localP * 1.6) * (Math.PI * 0.55);
         rocketAssy.leftDoor.rotation.y = doorAngle;
         rocketAssy.rightDoor.rotation.y = Math.PI - doorAngle;
 
-        const sepProgress = Math.min(1, localP * 1.5);
+        // Eject satellite (20% to 80%)
+        const sepProgress = Math.min(1, Math.max(0, localP - 0.2) * 1.25);
         satelliteAssy.group.position.set(0, 12.25 + sepProgress * 4.5, sepProgress * 2.0);
         satelliteAssy.group.rotation.y = localP * Math.PI * 0.5;
         satelliteAssy.group.scale.set(1.1, 1.1, 1.1);
 
-        const unfoldAngle = Math.min(1, Math.max(0, localP - 0.3) * 1.4) * (Math.PI * 0.5);
+        // Deploy solar panels (40% to 100%)
+        const unfoldAngle = Math.min(1, Math.max(0, localP - 0.4) * 1.6) * (Math.PI * 0.5);
         satelliteAssy.leftSolarArray.rotation.z = unfoldAngle;
         satelliteAssy.rightSolarArray.rotation.z = -unfoldAngle;
 
-        earthAssy.group.position.set(0, 50, -30);
-        earthAssy.group.scale.set(3.0, 3.0, 3.0);
+        // Position Earth as a dramatic lower orbital backdrop
+        earthAssy.group.position.set(-28, 15, -48);
+        earthAssy.group.scale.set(3.2, 3.2, 3.2);
 
         targetCamPos.set(Math.sin(localP * Math.PI) * 5, 78 + localP * 2, 14);
         targetCamLook.set(0, 77 + sepProgress * 3.5, 0);
@@ -252,7 +260,8 @@ export const ThreeCanvas: React.FC<ThreeCanvasProps> = ({ scrollProgress }) => {
         satelliteAssy.leftSolarArray.rotation.z = Math.PI * 0.5;
         satelliteAssy.rightSolarArray.rotation.z = -Math.PI * 0.5;
 
-        earthAssy.group.position.set(0, 45, -35);
+        // Lower-left Earth position to avoid text background glare
+        earthAssy.group.position.set(-30, 10, -50);
         earthAssy.group.scale.set(3.5, 3.5, 3.5);
 
         targetCamPos.set(0, 84, 18);

@@ -62,7 +62,7 @@ export function createEarthAssembly(): EarthObject {
   const cloudMat = new THREE.MeshStandardMaterial({
     map: cloudTex,
     transparent: true,
-    opacity: 0.55,
+    opacity: 0.40,
     blending: THREE.AdditiveBlending,
     depthWrite: false
   });
@@ -72,9 +72,9 @@ export function createEarthAssembly(): EarthObject {
   // Atmosphere Glow Shell
   const atmoGeo = new THREE.SphereGeometry(earthRadius + 0.6, 48, 48);
   const atmoMat = new THREE.MeshBasicMaterial({
-    color: 0x70C7FF,
+    color: 0x8CAFCB, // Atmospheric blue from brand palette
     transparent: true,
-    opacity: 0.18,
+    opacity: 0.22,
     side: THREE.BackSide,
     blending: THREE.AdditiveBlending
   });
