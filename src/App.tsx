@@ -3,7 +3,7 @@ import Lenis from 'lenis';
 import { Header } from './components/layout/Header';
 import { MissionHUD } from './components/layout/MissionHUD';
 import { Footer } from './components/layout/Footer';
-import { ThreeCanvas } from './three/ThreeCanvas';
+import { CinematicController } from './cinematic/CinematicController';
 import { Scene01Launch } from './components/scenes/Scene01Launch';
 import { Scene02Ignition } from './components/scenes/Scene02Ignition';
 import { Scene03Ascent } from './components/scenes/Scene03Ascent';
@@ -85,8 +85,8 @@ export default function App() {
   return (
     <div className="relative min-h-screen bg-[#03050B] text-[#F4F7FC] overflow-x-hidden font-sans">
       
-      {/* 3D WebGL Background Canvas */}
-      <ThreeCanvas scrollProgress={scrollProgress} activeScene={1} />
+      {/* Photorealistic 4K Cinematic Sequence Controller */}
+      <CinematicController scrollProgress={scrollProgress} />
 
       {/* Persistent Navigation Header */}
       <Header

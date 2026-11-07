@@ -1,0 +1,68 @@
+{
+  "production": "ORBIT Heavy Cinematic Reconstruction",
+  "masterResolution": "3840x2160",
+  "deliveryTiers": {
+    "4k": "3840x2160",
+    "qhd": "2560x1440",
+    "fhd": "1920x1080",
+    "mobile": "1280x720"
+  },
+  "shots": [
+    {
+      "id": "launchpad",
+      "name": "Launchpad Standby",
+      "range": [0.0, 0.10],
+      "frames": 8,
+      "path": "/cinematic/launchpad"
+    },
+    {
+      "id": "ignition",
+      "name": "Engine Ignition & Mach Diamonds",
+      "range": [0.10, 0.22],
+      "frames": 8,
+      "path": "/cinematic/ignition"
+    },
+    {
+      "id": "liftoff",
+      "name": "Tower Clearance & Liftoff",
+      "range": [0.22, 0.35],
+      "frames": 8,
+      "path": "/cinematic/liftoff"
+    },
+    {
+      "id": "ascent",
+      "name": "Atmospheric Ascent & Vapor Cone",
+      "range": [0.35, 0.52],
+      "frames": 8,
+      "path": "/cinematic/ascent"
+    },
+    {
+      "id": "separation",
+      "name": "Strap-on Booster Staging",
+      "range": [0.52, 0.68],
+      "frames": 8,
+      "path": "/cinematic/separation"
+    },
+    {
+      "id": "orbit",
+      "name": "Payload Fairing Jettison",
+      "range": [0.68, 0.80],
+      "frames": 8,
+      "path": "/cinematic/orbit"
+    },
+    {
+      "id": "deployment",
+      "name": "Satellite Separation & Solar Unfolding",
+      "range": [0.80, 0.94],
+      "frames": 8,
+      "path": "/cinematic/deployment"
+    },
+    {
+      "id": "final",
+      "name": "Stable Orbit & Mission Control",
+      "range": [0.94, 1.0],
+      "frames": 8,
+      "path": "/cinematic/final"
+    }
+  ]
+}
