@@ -143,35 +143,40 @@ export const ThreeCanvas: React.FC<ThreeCanvasProps> = ({ scrollProgress }) => {
 
       // MISSION SCENE PROGRESSION & DYNAMICS
       if (p < 0.16) {
-        // SCENE 01 — LAUNCHPAD STANDBY
+        // SCENE 01 — LAUNCHPAD STANDBY (Hero Safe Zone: Rocket placed off-center at x = 5.2)
         const localP = p / 0.16;
-        rocketAssy.group.position.set(0, 0.2, 0);
-        launchpad.position.set(0, 0, 0);
+        rocketAssy.group.position.set(5.2, 0.2, 0);
+        launchpad.position.set(8.5, 0, 0);
         earthAssy.group.position.set(0, -18, 0);
         earthAssy.group.scale.set(1, 1, 1);
         exhaustParticles.visible = false;
         combustionLight.intensity = 0;
 
         targetCamPos.set(
-          Math.sin(localP * Math.PI * 0.5) * 4,
-          2.5 + localP * 3,
-          14 - localP * 4
+          Math.sin(localP * Math.PI * 0.5) * 3,
+          3.2 + localP * 2,
+          15 - localP * 3
         );
-        targetCamLook.set(0, 4, 0);
+        targetCamLook.set(1.5, 4, 0);
 
         rocketAssy.leftDoor.rotation.y = 0;
         rocketAssy.rightDoor.rotation.y = Math.PI;
+
+        satelliteAssy.leftSolarArray.rotation.z = 0;
+        satelliteAssy.leftOuterGroup.rotation.z = 0;
+        satelliteAssy.rightSolarArray.rotation.z = 0;
+        satelliteAssy.rightOuterGroup.rotation.z = 0;
 
       } else if (p < 0.33) {
         // SCENE 02 — IGNITION & INITIAL LAUNCH
         const localP = (p - 0.16) / 0.17;
         const altitude = Math.pow(localP, 1.8) * 25;
 
-        rocketAssy.group.position.set(0, 0.2 + altitude, 0);
+        rocketAssy.group.position.set(5.2 - localP * 5.2, 0.2 + altitude, 0);
         exhaustParticles.visible = true;
 
         // Dynamic combustion flame light intensity & sinusoidal pulsation
-        combustionLight.position.set(0, 0.2 + altitude, 0);
+        combustionLight.position.set(5.2 - localP * 5.2, 0.2 + altitude, 0);
         const pulse = Math.sin(Date.now() * 0.03) * 0.8;
         combustionLight.intensity = (5 + pulse) * (1 - localP * 0.3);
 
@@ -205,48 +210,55 @@ export const ThreeCanvas: React.FC<ThreeCanvasProps> = ({ scrollProgress }) => {
         targetCamLook.set(0, 0.2 + altitude, 0);
 
       } else if (p < 0.70) {
-        // SCENE 04 — ORBITAL INSERTION & PROJECT SHOWCASE
+        // SCENE 04 — ORBITAL INSERTION & PROJECT SHOWCASE (Rocket off-screen right at x = 14)
         const localP = (p - 0.50) / 0.20;
         exhaustParticles.visible = false;
         combustionLight.intensity = 0;
 
-        rocketAssy.group.position.set(Math.sin(localP * Math.PI * 0.5) * 8, 75, Math.cos(localP * Math.PI * 0.5) * 4);
+        rocketAssy.group.position.set(14, 75, -8);
         rocketAssy.group.rotation.set(0.1, localP * Math.PI * 0.4, 1.4);
 
-        // Position Earth at left orbital horizon away from center text card
-        earthAssy.group.position.set(-25, 20, -45);
+        // Position Earth at left orbital horizon away from center project cards
+        earthAssy.group.position.set(-28, 15, -45);
         earthAssy.group.scale.set(3.0, 3.0, 3.0);
 
         targetCamPos.set(0, 76, 16);
-        targetCamLook.set(rocketAssy.group.position.x, 75, rocketAssy.group.position.z);
+        targetCamLook.set(0, 75, 0);
 
       } else if (p < 0.85) {
-        // SCENE 05 — SATELLITE DEPLOYMENT & SOLAR ARRAY EXTENSION
+        // SCENE 05 — SATELLITE DEPLOYMENT & MULTI-STAGE SOLAR ARRAY EXTENSION
         const localP = (p - 0.70) / 0.15;
         exhaustParticles.visible = false;
         combustionLight.intensity = 0;
 
-        // Sequence: 1. Fairing open (0 to 60%)
-        const doorAngle = Math.min(1, localP * 1.6) * (Math.PI * 0.55);
+        rocketAssy.group.position.set(0, 75, 0);
+        rocketAssy.group.rotation.set(0, 0, 0);
+
+        // Step 1: Fairing doors open (0 to 50%)
+        const doorAngle = Math.min(1, localP * 2.0) * (Math.PI * 0.55);
         rocketAssy.leftDoor.rotation.y = doorAngle;
         rocketAssy.rightDoor.rotation.y = Math.PI - doorAngle;
 
-        // Eject satellite (20% to 80%)
-        const sepProgress = Math.min(1, Math.max(0, localP - 0.2) * 1.25);
-        satelliteAssy.group.position.set(0, 12.25 + sepProgress * 4.5, sepProgress * 2.0);
+        // Step 2: Satellite ejection forward (25% to 75%)
+        const sepProgress = Math.min(1, Math.max(0, localP - 0.25) * 2.0);
+        satelliteAssy.group.position.set(0, 12.25 + sepProgress * 4.8, sepProgress * 2.2);
         satelliteAssy.group.rotation.y = localP * Math.PI * 0.5;
         satelliteAssy.group.scale.set(1.1, 1.1, 1.1);
 
-        // Deploy solar panels (40% to 100%)
-        const unfoldAngle = Math.min(1, Math.max(0, localP - 0.4) * 1.6) * (Math.PI * 0.5);
-        satelliteAssy.leftSolarArray.rotation.z = unfoldAngle;
-        satelliteAssy.rightSolarArray.rotation.z = -unfoldAngle;
+        // Step 3: Dual-stage hinged solar array deployment
+        const wingAngle = Math.min(1, Math.max(0, localP - 0.45) * 2.0) * (Math.PI * 0.5);
+        satelliteAssy.leftSolarArray.rotation.z = wingAngle;
+        satelliteAssy.rightSolarArray.rotation.z = -wingAngle;
+
+        const outerAngle = Math.min(1, Math.max(0, localP - 0.65) * 2.0) * (Math.PI * 0.95);
+        satelliteAssy.leftOuterGroup.rotation.z = -outerAngle;
+        satelliteAssy.rightOuterGroup.rotation.z = outerAngle;
 
         // Position Earth as a dramatic lower orbital backdrop
         earthAssy.group.position.set(-28, 15, -48);
         earthAssy.group.scale.set(3.2, 3.2, 3.2);
 
-        targetCamPos.set(Math.sin(localP * Math.PI) * 5, 78 + localP * 2, 14);
+        targetCamPos.set(Math.sin(localP * Math.PI) * 4, 78 + localP * 2, 14);
         targetCamLook.set(0, 77 + sepProgress * 3.5, 0);
 
       } else {
@@ -255,10 +267,15 @@ export const ThreeCanvas: React.FC<ThreeCanvasProps> = ({ scrollProgress }) => {
         exhaustParticles.visible = false;
         combustionLight.intensity = 0;
 
-        satelliteAssy.group.position.set(Math.sin(localP * Math.PI * 0.4) * 5, 82, Math.cos(localP * Math.PI * 0.4) * 3);
+        // Hide main rocket body in final scene
+        rocketAssy.group.position.set(0, -200, 0);
+
+        satelliteAssy.group.position.set(Math.sin(localP * Math.PI * 0.4) * 4, 82, Math.cos(localP * Math.PI * 0.4) * 3);
         satelliteAssy.group.rotation.y += 0.004;
         satelliteAssy.leftSolarArray.rotation.z = Math.PI * 0.5;
+        satelliteAssy.leftOuterGroup.rotation.z = -Math.PI * 0.95;
         satelliteAssy.rightSolarArray.rotation.z = -Math.PI * 0.5;
+        satelliteAssy.rightOuterGroup.rotation.z = Math.PI * 0.95;
 
         // Lower-left Earth position to avoid text background glare
         earthAssy.group.position.set(-30, 10, -50);

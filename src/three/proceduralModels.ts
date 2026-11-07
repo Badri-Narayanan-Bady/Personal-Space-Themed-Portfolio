@@ -30,7 +30,9 @@ export interface SatelliteObject {
   chassis: THREE.Mesh;
   dish: THREE.Mesh;
   leftSolarArray: THREE.Group;
+  leftOuterGroup: THREE.Group;
   rightSolarArray: THREE.Group;
+  rightOuterGroup: THREE.Group;
 }
 
 /**
@@ -103,6 +105,13 @@ export function createLaunchpadAssembly(): THREE.Group {
   base.receiveShadow = true;
   group.add(base);
 
+  // Flame trench exhaust duct opening
+  const trenchGeo = new THREE.BoxGeometry(4.5, 1.3, 8);
+  const trenchMat = new THREE.MeshStandardMaterial({ color: 0x0F172A, roughness: 0.95 });
+  const trench = new THREE.Mesh(trenchGeo, trenchMat);
+  trench.position.set(0, -0.65, 0);
+  group.add(trench);
+
   // Structural Tower
   const towerGeo = new THREE.BoxGeometry(1.5, 12, 1.5);
   const towerMat = new THREE.MeshStandardMaterial({
@@ -154,6 +163,21 @@ export function createRocketAssembly(): RocketObject {
   const stripe = new THREE.Mesh(stripeGeo, stripeMat);
   stripe.position.y = 5.5;
   group.add(stripe);
+
+  // 9-Engine Merlin Nozzle Cluster at Stage 1 base
+  const engineMat = new THREE.MeshStandardMaterial({ color: 0x1E293B, metalness: 0.95, roughness: 0.1 });
+  const nozzleGeo = new THREE.ConeGeometry(0.18, 0.5, 16);
+  for (let i = 0; i < 9; i++) {
+    const nozzle = new THREE.Mesh(nozzleGeo, engineMat);
+    nozzle.rotation.x = Math.PI;
+    if (i === 0) {
+      nozzle.position.set(0, -0.25, 0);
+    } else {
+      const angle = ((i - 1) * Math.PI) / 4;
+      nozzle.position.set(Math.cos(angle) * 0.45, -0.25, Math.sin(angle) * 0.45);
+    }
+    group.add(nozzle);
+  }
 
   // 4 Outer Side Boosters
   const boosters: THREE.Group[] = [];
@@ -256,13 +280,13 @@ export function createRocketAssembly(): RocketObject {
 }
 
 /**
- * Creates photorealistic Satellite with deployable solar panel arrays.
+ * Creates photorealistic Satellite with deployable multi-segment solar panel arrays.
  */
 export function createSatelliteAssembly(): SatelliteObject {
   const group = new THREE.Group();
   group.name = "SatelliteAssembly";
 
-  // Main Satellite Body Chassis (Gold foil insulation)
+  // Main Satellite Body Chassis (Gold foil kapton insulation)
   const chassisGeo = new THREE.BoxGeometry(1.4, 1.4, 2.0);
   const goldTex = createGoldFoilTexture();
   const chassisMat = new THREE.MeshStandardMaterial({
@@ -275,8 +299,19 @@ export function createSatelliteAssembly(): SatelliteObject {
   chassis.castShadow = true;
   group.add(chassis);
 
-  // High Gain Communication Dish
-  const dishGeo = new THREE.CylinderGeometry(0.8, 0.1, 0.3, 24);
+  // Silver Thermal Insulation Accents
+  const trimGeo = new THREE.BoxGeometry(1.42, 0.2, 2.02);
+  const silverMat = new THREE.MeshStandardMaterial({ color: 0xE2E8F0, metalness: 0.9, roughness: 0.2 });
+  const trimTop = new THREE.Mesh(trimGeo, silverMat);
+  trimTop.position.y = 0.6;
+  group.add(trimTop);
+
+  const trimBottom = new THREE.Mesh(trimGeo, silverMat);
+  trimBottom.position.y = -0.6;
+  group.add(trimBottom);
+
+  // High Gain Communication Dish & Feed Horn Mast
+  const dishGeo = new THREE.CylinderGeometry(0.85, 0.1, 0.35, 24);
   const dishMat = new THREE.MeshStandardMaterial({ color: 0xF8FAFC, metalness: 0.9, roughness: 0.1 });
   const dish = new THREE.Mesh(dishGeo, dishMat);
   dish.rotation.x = Math.PI / 2;
@@ -284,14 +319,14 @@ export function createSatelliteAssembly(): SatelliteObject {
   dish.castShadow = true;
   group.add(dish);
 
-  // Antenna Feed
+  // Antenna Feed Horn & Struts
   const feedGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.8, 12);
   const feedMat = new THREE.MeshStandardMaterial({ color: 0x70C7FF, metalness: 0.9 });
   const feed = new THREE.Mesh(feedGeo, feedMat);
-  feed.position.set(0, 1.3, 0);
+  feed.position.set(0, 1.35, 0);
   group.add(feed);
 
-  // Solar Panel Arrays (Left & Right)
+  // Solar Panel Arrays (Left & Right) with Hinge Joints
   const solarTex = createSolarPanelTexture();
   const solarMat = new THREE.MeshStandardMaterial({
     map: solarTex,
@@ -300,37 +335,69 @@ export function createSatelliteAssembly(): SatelliteObject {
     side: THREE.DoubleSide
   });
 
-  // Left Solar Array Pivot Group
+  const hingeMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.95 });
+
+  // LEFT SOLAR ARRAY (Pivot at bus connection x = -0.7)
   const leftSolarArray = new THREE.Group();
   leftSolarArray.position.set(-0.7, 0, 0);
 
-  const panelGeo = new THREE.BoxGeometry(1.6, 0.05, 0.8);
-  const leftP1 = new THREE.Mesh(panelGeo, solarMat);
-  leftP1.position.set(-0.8, 0, 0);
-  leftP1.castShadow = true;
-  leftSolarArray.add(leftP1);
+  // Left Hinge 1
+  const leftHinge1 = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.4, 12), hingeMat);
+  leftHinge1.rotation.z = Math.PI / 2;
+  leftSolarArray.add(leftHinge1);
 
-  const leftP2 = new THREE.Mesh(panelGeo, solarMat);
-  leftP2.position.set(-2.5, 0, 0);
-  leftP2.castShadow = true;
-  leftSolarArray.add(leftP2);
+  // Left Inner Panel
+  const panelGeo = new THREE.BoxGeometry(1.5, 0.05, 0.8);
+  const leftInner = new THREE.Mesh(panelGeo, solarMat);
+  leftInner.position.set(-0.75, 0, 0);
+  leftInner.castShadow = true;
+  leftSolarArray.add(leftInner);
 
+  // Left Outer Group (Pivot at inner panel end x = -1.5)
+  const leftOuterGroup = new THREE.Group();
+  leftOuterGroup.position.set(-1.5, 0, 0);
+
+  const leftHinge2 = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.4, 12), hingeMat);
+  leftHinge2.rotation.z = Math.PI / 2;
+  leftOuterGroup.add(leftHinge2);
+
+  const leftOuter = new THREE.Mesh(panelGeo, solarMat);
+  leftOuter.position.set(-0.75, 0, 0);
+  leftOuter.castShadow = true;
+  leftOuterGroup.add(leftOuter);
+
+  leftSolarArray.add(leftOuterGroup);
   group.add(leftSolarArray);
 
-  // Right Solar Array Pivot Group
+  // RIGHT SOLAR ARRAY (Pivot at bus connection x = 0.7)
   const rightSolarArray = new THREE.Group();
   rightSolarArray.position.set(0.7, 0, 0);
 
-  const rightP1 = new THREE.Mesh(panelGeo, solarMat);
-  rightP1.position.set(0.8, 0, 0);
-  rightP1.castShadow = true;
-  rightSolarArray.add(rightP1);
+  // Right Hinge 1
+  const rightHinge1 = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.4, 12), hingeMat);
+  rightHinge1.rotation.z = Math.PI / 2;
+  rightSolarArray.add(rightHinge1);
 
-  const rightP2 = new THREE.Mesh(panelGeo, solarMat);
-  rightP2.position.set(2.5, 0, 0);
-  rightP2.castShadow = true;
-  rightSolarArray.add(rightP2);
+  // Right Inner Panel
+  const rightInner = new THREE.Mesh(panelGeo, solarMat);
+  rightInner.position.set(0.75, 0, 0);
+  rightInner.castShadow = true;
+  rightSolarArray.add(rightInner);
 
+  // Right Outer Group (Pivot at inner panel end x = 1.5)
+  const rightOuterGroup = new THREE.Group();
+  rightOuterGroup.position.set(1.5, 0, 0);
+
+  const rightHinge2 = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.4, 12), hingeMat);
+  rightHinge2.rotation.z = Math.PI / 2;
+  rightOuterGroup.add(rightHinge2);
+
+  const rightOuter = new THREE.Mesh(panelGeo, solarMat);
+  rightOuter.position.set(0.75, 0, 0);
+  rightOuter.castShadow = true;
+  rightOuterGroup.add(rightOuter);
+
+  rightSolarArray.add(rightOuterGroup);
   group.add(rightSolarArray);
 
   return {
@@ -338,7 +405,9 @@ export function createSatelliteAssembly(): SatelliteObject {
     chassis,
     dish,
     leftSolarArray,
-    rightSolarArray
+    leftOuterGroup,
+    rightSolarArray,
+    rightOuterGroup
   };
 }
 
